@@ -1,9 +1,10 @@
 #!/usr/bin/python3
 
 # Updates a Mikrotik router address-list based on a text file listing the addresses.
+# Tracked at: https://github.com/vrgpy/update_address-list
 
 import os
-import sys
+import argparse
 import re
 import json
 import requests
@@ -105,9 +106,8 @@ def mk_getlist(cfg, listname):
     return json.loads(resp.text)
 
 
-import argparse
-import os
 
+# Command line arguments
 
 # Initialize parser
 parser = argparse.ArgumentParser(
@@ -124,10 +124,8 @@ parser.add_argument('-v', '--verbose', action='count', default=0, help= 'increas
 
 args = parser.parse_args()
 
-# Debug
 DebugLevel = DebugLevel + args.verbose
 log('INFO', "DebugLevel: {}".format(DebugLevel))
-
 log('TRACE', str(args))
 
 
