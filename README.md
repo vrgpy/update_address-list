@@ -13,7 +13,7 @@ See: https://help.mikrotik.com/docs/spaces/ROS/pages/47579162/REST+API
 
 #### API Service
 To enable the API access the router should have the www-ssl or www service enabled.
-While you can test the script with the www service using an http url, this is not recommended in production.
+For production, only the www-ssl service is recommended.
 
 #### User Permissions
 The user used in the API call should have these allowed policies:
@@ -61,8 +61,11 @@ The content is a JSON formatted dictionary:
     { "endpoint":
       {
          "url":       "https://router.domain/rest",
+         "tlsverify": "True",
          "username":  "api",
          "password":  "my-very-secure-password"
       }
     }
 
+if you have a custom CA file that you can't add to your operating system, you can set the tlsverify parameter to the path to the certificate file.
+Optionally you can set the tlsverify to "False" during develompent.
