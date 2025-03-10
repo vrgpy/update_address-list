@@ -1,19 +1,18 @@
 # update_address-list
-Updates a Mikrotik RouterOS Access List based on a list of IP ranges
+Updates a [Mikrotik](https://mikrotik.com/) RouterOS Access List based on a list of IP ranges
 
 ## Operation
-The script reads a SourceFile containing a list of IP addresses/ranges and updates an Access List in a Mikrotik router.
+The script reads a local SourceFile containing a list of IP addresses/ranges and updates an Access List in a Mikrotik router.
 
-The Access Lists is read and compared with the SourceFile and only the changes are applied to the router using the Mikrotik REST API.
+The Access Lists is read and compared with the SourceFile and only the differences are applied to the router using the Mikrotik REST API.
 
 ### API
-The Mikrotik REST API details are documented in Mikrotik Wiki
+The Mikrotik REST API details are documented in the new Mikrotik RouterOS Wiki
 See: https://help.mikrotik.com/docs/spaces/ROS/pages/47579162/REST+API
 
-
 #### API Service
-To enable the API access the router should have the www-ssl or www service enabled.
-For production, only the www-ssl service is recommended.
+To enable the API access the router should have the 'www-ssl' or 'www' service enabled.
+For production, only the 'www-ssl' service is recommended.
 
 #### User Permissions
 The user used in the API call should have these allowed policies:
@@ -23,6 +22,7 @@ The user used in the API call should have these allowed policies:
 - rest-api
 
 This is configured in the user group definition in / System / Users / Groups /
+
 
 ### RouterOS v7
 In winbox the Address Lists are configured in :
@@ -67,5 +67,5 @@ The content is a JSON formatted dictionary:
       }
     }
 
-if you have a custom CA file that you can't add to your operating system, you can set the tlsverify parameter to the path to the certificate file.
+if you have a custom CA file that you can't add to your operating system, you can set the optional tlsverify parameter to the path to the certificate file.
 Optionally you can set the tlsverify to "False" during develompent.
