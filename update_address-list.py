@@ -197,11 +197,11 @@ for row in rtrlst:
 log('INFO', "{} records to delete".format(len(todel)))
 log('TRACE', todel)
 
-result= mk_removelistitem(config['endpoint'], todel)
-if result['total'] >0:
-  log('INFO', "{} records deleted".format(result['success']))
+deleted= mk_removelistitem(config['endpoint'], todel)
+if deleted['total'] >0:
+  log('INFO', "{} records deleted".format(deleted['success']))
 
-for line in srclst:    
+for line in srclst:
     found=False
     for item in rtrlst:
         if line == item['address']:
@@ -212,7 +212,11 @@ for line in srclst:
 log('INFO', "{} records to add".format(len(toadd)))
 log('TRACE', toadd)
 
-result= mk_addlistaddress(config['endpoint'], args.AddressList, toadd)
-if result['total'] >0:
-  log('INFO', "{} records added".format(result['success']))
+added= mk_addlistaddress(config['endpoint'], args.AddressList, toadd)
+if added['total'] >0:
+  log('INFO', "{} records added".format(added['success']))
 
+if (deleted['success'] == deleted['total']) and (added['success'] == added['total']):
+    print("Address List \"{}\" updated".format(args.AddressList))
+else:
+    print("Errors ")
