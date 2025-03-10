@@ -4,7 +4,7 @@
 
 import os
 import sys
-import yaml
+import re
 import json
 import requests
 from requests.auth import HTTPBasicAuth
@@ -29,10 +29,10 @@ def log(level, intext):
     elif (level.upper()=='TRACE'):
         if DebugLevel>5: print(header + text)
 
-# Ajusto nivel de logueo
+# Loglevel adjusting
 DebugLevels = { 'OFF':0, 'FATAL':1, 'ERROR':2, 'WARN':3, 'INFO':4, 'DEBUG':5, 'TRACE':6 }   
-# Logueo por defecto
-DebugLevel = DebugLevels['ERROR']
+# Default logging
+DebugLevel = DebugLevels['WARN']
 
 
 def getlist(str):
@@ -53,11 +53,18 @@ def mk_removelistitem(cfg, ids):
     userid= str(cfg['username'])
     passwd= str(cfg['password'])
     
+    reqcnt= { 'success': 0, 'total': 0 }   
     for id in ids:
       data = { "numbers": id }
       
       resp = requests.post(url, auth= HTTPBasicAuth(userid, passwd), json= data, verify=cfg['tlsverify'])
       log('DEBUG', resp.text)
+
+      reqcnt['total']= reqcnt['total'] +1      
+      if resp.status_code == 200:
+          reqcnt['success']= reqcnt['success'] +1
+      
+    return reqcnt
 
 
 def mk_addlistaddress(cfg, listname, addresses):
@@ -66,11 +73,18 @@ def mk_addlistaddress(cfg, listname, addresses):
     userid= str(cfg['username'])
     passwd= str(cfg['password'])
     
+    reqcnt= { 'success': 0, 'total': 0 }    
     for addr in addresses:
       data = { "list": listname, "address": addr }
       
       resp = requests.post(url, auth= HTTPBasicAuth(userid, passwd), json= data, verify=cfg['tlsverify'])
       log('DEBUG', resp.text)
+
+      reqcnt['total']= reqcnt['total'] +1      
+      if resp.status_code == 200:
+          reqcnt['success']= reqcnt['success'] +1
+      
+    return reqcnt
 
 
 def mk_getlist(cfg, listname):
@@ -104,34 +118,52 @@ parser = argparse.ArgumentParser(
 
 parser.add_argument('SourceFile', help= 'file with IP addreses to load')
 parser.add_argument('AddressList', help= 'name of the Address List')
-parser.add_argument('-i', '--ipver', default="4", help= 'version of IP for the Address List. Default=4')
-parser.add_argument('-r', '--router', help = 'Specify Router API endpoint')
+parser.add_argument('-i', '--ipver', default="4", metavar='IPVer', help= 'version of IP for the Address List. Default=4')
+parser.add_argument('-c', '--config', metavar='ConfigFile', help = 'Specify configuration file. Default= ~/.update_address-list.json')
 parser.add_argument('-v', '--verbose', action='count', default=0, help= 'increase logging level')
 
 args = parser.parse_args()
 
 # Debug
 DebugLevel = DebugLevel + args.verbose
-
 log('INFO', "DebugLevel: {}".format(DebugLevel))
+
+log('TRACE', str(args))
 
 
 # Configuration file
-config=''
-if args.router == None:
-  f = open('{}/.update_address-list.json'.format(os.getenv("HOME")))
-  config = json.load(f)
-  f.close()
+
+ConfigFile = ''
+if args.config == None:
+  ConfigFile = '{}/.update_address-list.json'.format(os.getenv("HOME"))
+  if not os.path.exists(ConfigFile):
+    print("ERROR: A config file should be specified with -c option if the default configuration file doesn't exist")
+    exit(-1)
 else:
-  f = open(args.router)
+  ConfigFile = args.config
+
+if re.search('^~/', ConfigFile):
+  ConfigFile = re.sub(r'^~', os.getenv("HOME"), ConfigFile)  
+
+if not os.path.exists(ConfigFile):
+  print("ERROR: Can't find the configuration file \"{}\"".format(ConfigFile))
+  exit(-1)
+  
+config =''
+f = open(ConfigFile)
+try:
   config = json.load(f)
-  f.close()
+except ValueError:
+    print('ERROR: Loading JSON from configuration file has failed')
+f.close()
+
 # Basic validation
+assert isinstance(config, dict), "Configuration file should be a JSON dictionary"
+assert config['endpoint'] != None, "Configuration file: Endpoint not defined"
 assert config['endpoint']['url'] != None, "Configuration file: Endpoint has no URL"
 assert config['endpoint']['username'] != None, "Configuration file: Endpoint file has no username"
 assert config['endpoint']['password'] != None, "Configuration file: Endpoint file has no password"
 config['endpoint']['tlsverify'] = config['endpoint'].get('tlsverify', True)
-
 
 # Load Source File
 srclst=''
@@ -139,6 +171,7 @@ if os.path.exists(args.SourceFile):
   srclst = getlist(args.SourceFile)
 else:
   log('FATAL', "The source file \"{}\" does not exist".format(args.SourceFile))
+  print("ERROR: Can't find the source file \"{}\"".format(args.SourceFile))
   exit(1)
 log('DEBUG',"Source file has {} records".format(len(srclst)))
 log('TRACE', str(srclst))
@@ -161,10 +194,12 @@ for row in rtrlst:
     
     if not found:
         todel.append(row['.id'])
-log('DEBUG', "{} records to add".format(len(todel)))
+log('INFO', "{} records to delete".format(len(todel)))
 log('TRACE', todel)
 
-mk_removelistitem(config['endpoint'], todel)
+result= mk_removelistitem(config['endpoint'], todel)
+if result['total'] >0:
+  log('INFO', "{} records deleted".format(result['success']))
 
 for line in srclst:    
     found=False
@@ -174,8 +209,10 @@ for line in srclst:
             break
     if not found:
         toadd.append(line)
-log('DEBUG', "{} records to delete".format(len(toadd)))
+log('INFO', "{} records to add".format(len(toadd)))
 log('TRACE', toadd)
 
-mk_addlistaddress(config['endpoint'], args.AddressList, toadd)
+result= mk_addlistaddress(config['endpoint'], args.AddressList, toadd)
+if result['total'] >0:
+  log('INFO', "{} records added".format(result['success']))
 
