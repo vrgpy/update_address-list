@@ -135,7 +135,17 @@ ConfigFile = ''
 if args.config == None:
   ConfigFile = '{}/.update_address-list.json'.format(os.getenv("HOME"))
   if not os.path.exists(ConfigFile):
-    print("ERROR: A config file should be specified with -c option if the default configuration file doesn't exist")
+    print("ERROR: A configuration file should be specified with -c option if the default configuration file doesn't exist")
+    print('''The configuration file format is:
+{ "endpoint":
+  {
+     "url":       "https://router.domain/rest",
+     "tlsverify": "True",
+     "username":  "api",
+     "password":  "my-very-secure-password"
+  }
+}
+''' )
     exit(-1)
 else:
   ConfigFile = args.config
