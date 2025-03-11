@@ -8,17 +8,17 @@ They are defined:
 - for IPv6 in: IPV6 / Firewall / Address List
 
 ## Script Operation
-The script reads a local SourceFile containing a list of IP addresses/ranges and updates an Access List in a Mikrotik router.
+The script reads a local SourceFile containing a list of IP addresses/ranges and updates an Access List in a Mikrotik router. The script requires Python 3.
 
-The Access Lists is read and compared with the SourceFile and only the differences are applied to the router using the Mikrotik REST API.
+The Access Lists is read and compared with the SourceFile and only the differences are applied to the router using the RouterOS REST API. the REST API is available since RouterOS v7.9.
 
-## RouterOS API
+## RouterOS REST API
 ### Protocol
 The Mikrotik REST API details are documented in the new Mikrotik RouterOS Wiki
 See: https://help.mikrotik.com/docs/spaces/ROS/pages/47579162/REST+API
 
 ### API Service
-To enable the API access the router should have the 'www-ssl' or 'www' service enabled.
+To enable the API access the router should have the 'www-ssl' or 'www' service configured and enabled.
 For production, only the 'www-ssl' service is recommended.
 
 ### User Policies
