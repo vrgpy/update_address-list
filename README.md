@@ -1,20 +1,27 @@
 # update_address-list
 Updates a [Mikrotik](https://mikrotik.com/) RouterOS Access List based on a list of IP ranges
 
-## Operation
+## Access Lists in RouterOS v7
+In RouterOS the Access Lists are used in the firewall as conditions for source or destination for the rules to apply to packets or connections.
+They are defined:
+- for IPv4 in: IP / Firewall / Address List
+- for IPv6 in: IPV6 / Firewall / Address List
+
+## Script Operation
 The script reads a local SourceFile containing a list of IP addresses/ranges and updates an Access List in a Mikrotik router.
 
 The Access Lists is read and compared with the SourceFile and only the differences are applied to the router using the Mikrotik REST API.
 
-### API
+## RouterOS API
+### Protocol
 The Mikrotik REST API details are documented in the new Mikrotik RouterOS Wiki
 See: https://help.mikrotik.com/docs/spaces/ROS/pages/47579162/REST+API
 
-#### API Service
+### API Service
 To enable the API access the router should have the 'www-ssl' or 'www' service enabled.
 For production, only the 'www-ssl' service is recommended.
 
-#### User Permissions
+### User Policies
 The user used in the API call should have these allowed policies:
 - read
 - write
@@ -24,13 +31,7 @@ The user used in the API call should have these allowed policies:
 This is configured in the user group definition in / System / Users / Groups /
 
 
-### RouterOS v7
-In winbox the Address Lists are configured in :
- - for IPv4 in: IP / Firewall / Address List
- - for IPv6 in: IPV6 / Firewall / Address List
-
-
-### Usage
+### Script Usage
     usage: update_address-list [-h] [-i IPVer] [-c ConfigFile] [-v] SourceFile AddressList
     
     Updates a Mikrotik Router address-list based on a file containg a list of IP ranges
