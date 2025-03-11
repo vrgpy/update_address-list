@@ -226,5 +226,3 @@ if added['total'] >0:
 
 if (deleted['success'] == deleted['total']) and (added['success'] == added['total']):
     print("Address List \"{}\" updated".format(args.AddressList))
-else:
-    print("Errors ")
